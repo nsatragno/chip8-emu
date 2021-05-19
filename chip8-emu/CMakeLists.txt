@@ -7,7 +7,10 @@ project ("chip8-emu")
 set(CMAKE_CXX_STANDARD 17)
 
 # Add source to this project's executable.
-add_executable(chip8-emu "chip8-emu.cpp" "chip8-emu.h")
+add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp")
+
+set(BASEPATH "${CMAKE_SOURCE_DIR}")
+include_directories("${BASEPATH}")
 
 # Tests
 include(FetchContent)
@@ -22,9 +25,9 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  tests
-  test/test.cpp
-)
+ "tests"
+ "test/cpu_test.cpp"
+ "src/cpu.h" "src/cpu.cpp")
 target_link_libraries(
   tests
   gtest_main
