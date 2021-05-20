@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include "src/frame_buffer.h"
-#include "src/registers.h"
 
 // A CHIP-8 complete CPU.
 class Cpu {
@@ -20,14 +19,16 @@ class Cpu {
   // Returns the contents of memory at |address|.
   uint8_t peek(uint16_t address) const;
 
-  // Returns true if the machine was able to execute |instruction| successfully,
-  // false otherwise.
+  // Executes |instruction| without incrementing the program counter. Returns
+  // true if the machine was able to execute the instruction successfully, false
+  // otherwise.
   bool execute(uint16_t instruction);
 
   uint16_t pc() { return pc_; }
 
  private:
-  Registers registers_;
+  uint8_t v_[16] = {{0}};
+  uint16_t index_;
   FrameBuffer buffer_;
   uint16_t stack_[kStackSize];
   uint8_t sp_ = 0;

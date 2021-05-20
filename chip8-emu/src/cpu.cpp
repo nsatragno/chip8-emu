@@ -10,6 +10,7 @@ uint8_t Cpu::peek(uint16_t address) const {
 }
 
 bool Cpu::execute(uint16_t instruction) {
+
   // 00e0 - CLS.
   if (instruction == 0x00e0) {
     // TODO: not implemented.
@@ -44,6 +45,32 @@ bool Cpu::execute(uint16_t instruction) {
     stack_[sp_] = pc_;
     ++sp_;
     pc_ = instruction & 0xfff;
+    return true;
+  }
+  // 3xkk - SE Vx, byte.
+  if (instruction >> 12 == 0x3) {
+    if (v_[(instruction & 0xf00) >> 8] == (instruction & 0x0ff)) {
+      pc_ += 1;
+    }
+    return true;
+  }
+  // 4xkk - SNE Vx, byte.
+  if (instruction >> 12 == 0x4) {
+    if (v_[(instruction & 0xf00) >> 8] != (instruction & 0x0ff)) {
+      pc_ += 1;
+    }
+    return true;
+  }
+  // 5xy0 - SE Vx, Vy
+  if (instruction >> 12 == 0x5 && (instruction & 0xf) == 0) {
+    if (v_[(instruction & 0xf00) >> 8] == v_[(instruction & 0x0f0) >> 4]) {
+      pc_ += 1;
+    }
+    return true;
+  }
+  // 6xkk - LD Vx, byte.
+  if (instruction >> 12 == 0x6) {
+    v_[(instruction & 0xf00) >> 8] = instruction & 0x0ff;
     return true;
   }
 

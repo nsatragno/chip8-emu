@@ -61,3 +61,81 @@ TEST_F(CpuTest, RetUnderflow) {
   ASSERT_TRUE(cpu.execute(0x00ee));
   ASSERT_FALSE(cpu.execute(0x00ee));
 }
+
+TEST_F(CpuTest, SkipInstructionIfEqual) {
+  EXPECT_EQ(0, cpu.pc());
+
+  // Load into register 0 the value 90.
+  ASSERT_TRUE(cpu.execute(0x6090));
+
+  // Skip if register 0 contains the value 90.
+  ASSERT_TRUE(cpu.execute(0x3090));
+  EXPECT_EQ(1, cpu.pc());
+
+  // Skip if register 0 contains the value ff.
+  ASSERT_TRUE(cpu.execute(0x30ff));
+  EXPECT_EQ(1, cpu.pc());
+
+  // Load into register f the value ff.
+  ASSERT_TRUE(cpu.execute(0x6fff));
+
+  // Skip if register f contains the value ff.
+  ASSERT_TRUE(cpu.execute(0x3fff));
+  EXPECT_EQ(2, cpu.pc());
+
+  // Skip if register f contains the value 0.
+  ASSERT_TRUE(cpu.execute(0x3f00));
+  EXPECT_EQ(2, cpu.pc());
+
+  // Skip if register a contains the value ff.
+  ASSERT_TRUE(cpu.execute(0x3aff));
+  EXPECT_EQ(2, cpu.pc());
+}
+
+TEST_F(CpuTest, SkipInstructionIfNotEqual) {
+  EXPECT_EQ(0, cpu.pc());
+
+  // Load into register 0 the value 90.
+  ASSERT_TRUE(cpu.execute(0x6090));
+
+  // Skip if register 0 does not contain the value 90.
+  ASSERT_TRUE(cpu.execute(0x4090));
+  EXPECT_EQ(0, cpu.pc());
+
+  // Skip if register 0 does not contain the value ff.
+  ASSERT_TRUE(cpu.execute(0x40ff));
+  EXPECT_EQ(1, cpu.pc());
+
+  // Load into register f the value ff.
+  ASSERT_TRUE(cpu.execute(0x6fff));
+
+  // Skip if register f does not contain the value ff.
+  ASSERT_TRUE(cpu.execute(0x4fff));
+  EXPECT_EQ(1, cpu.pc());
+
+  // Skip if register f does not contain the value 0.
+  ASSERT_TRUE(cpu.execute(0x4f00));
+  EXPECT_EQ(2, cpu.pc());
+
+  // Skip if register a does not contain the value ff.
+  ASSERT_TRUE(cpu.execute(0x4aff));
+  EXPECT_EQ(3, cpu.pc());
+}
+
+TEST_F(CpuTest, SkipInstructionIfEqualsRegister) {
+  EXPECT_EQ(0, cpu.pc());
+
+  // Load into register 0 the value 90.
+  ASSERT_TRUE(cpu.execute(0x6090));
+
+  // Load into register f the value 90.
+  ASSERT_TRUE(cpu.execute(0x6f90));
+
+  // Skip if registers 0 and f are equal.
+  ASSERT_TRUE(cpu.execute(0x50f0));
+  EXPECT_EQ(1, cpu.pc());
+
+  // Skip if registers 0 and e are equal.
+  ASSERT_TRUE(cpu.execute(0x50e0));
+  EXPECT_EQ(1, cpu.pc());
+}
