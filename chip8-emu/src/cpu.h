@@ -26,6 +26,8 @@ class Cpu {
 
   uint16_t pc() { return pc_; }
 
+  uint16_t v(uint8_t index) { return v_[index]; }
+
  private:
   uint8_t v_[16] = {{0}};
   uint16_t index_;

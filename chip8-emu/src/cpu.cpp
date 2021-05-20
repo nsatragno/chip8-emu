@@ -73,6 +73,16 @@ bool Cpu::execute(uint16_t instruction) {
     v_[(instruction & 0xf00) >> 8] = instruction & 0x0ff;
     return true;
   }
+  // 7xkk - ADD Vx, byte.
+  if (instruction >> 12 == 0x7) {
+    v_[(instruction & 0xf00) >> 8] += instruction & 0x0ff;
+    return true;
+  }
+  // 8xy0 - LD Vx, Vy
+  if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0) {
+    v_[(instruction & 0xf00) >> 8] = v_[(instruction & 0x0f0) >> 4];
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));

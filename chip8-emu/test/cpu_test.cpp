@@ -139,3 +139,36 @@ TEST_F(CpuTest, SkipInstructionIfEqualsRegister) {
   ASSERT_TRUE(cpu.execute(0x50e0));
   EXPECT_EQ(1, cpu.pc());
 }
+
+TEST_F(CpuTest, Add) {
+  // Add 0x30 to the register 0.
+  ASSERT_TRUE(cpu.execute(0x7030));
+  EXPECT_EQ(0x30, cpu.v(0));
+  EXPECT_EQ(0, cpu.v(0xf));
+
+  // Add 0x03 to the register 0.
+  ASSERT_TRUE(cpu.execute(0x7003));
+  EXPECT_EQ(0x33, cpu.v(0));
+  EXPECT_EQ(0, cpu.v(0xf));
+
+  // Add 0xff to the register e.
+  ASSERT_TRUE(cpu.execute(0x7eff));
+  EXPECT_EQ(0xff, cpu.v(0xe));
+
+  // Add 0x02 to the register e.
+  ASSERT_TRUE(cpu.execute(0x7e02));
+  EXPECT_EQ(0x01, cpu.v(0xe));
+  EXPECT_EQ(0, cpu.v(0xf));
+}
+
+TEST_F(CpuTest, LoadFromRegister) {
+  // Add 0x30 to the register 0.
+  ASSERT_TRUE(cpu.execute(0x7030));
+  EXPECT_EQ(0x30, cpu.v(0));
+  EXPECT_EQ(0, cpu.v(0x1));
+
+  // Set register 1 to register 0.
+  ASSERT_TRUE(cpu.execute(0x8100));
+  EXPECT_EQ(0x30, cpu.v(0));
+  EXPECT_EQ(0x30, cpu.v(0x1));
+}
