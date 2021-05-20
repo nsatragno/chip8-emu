@@ -1,4 +1,5 @@
 #include <vector>
+#include <bitset>
 
 // A 64 x 32 pixel display framebuffer.
 class FrameBuffer {
@@ -13,6 +14,11 @@ class FrameBuffer {
   // Sets the pixel at coordinates |x|, |y|, wrapping the screen if necessary.
   void set_pixel(uint8_t x, uint8_t y, bool on);
 
+  // Clears the framebuffer.
+  void clear_screen();
+
+  void print();
+
  private:
-  uint32_t buffer[64] = {{0}};
+  std::bitset<kScreenHeight> buffer_[kScreenWidth];
 };
