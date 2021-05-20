@@ -112,6 +112,19 @@ bool Cpu::execute(uint16_t instruction) {
     v_[(instruction & 0xf00) >> 8] -= right;
     return true;
   }
+  // 8xy6 - SHR Vx {, Vy}
+  if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x6) {
+    v_[0xf] = v_[(instruction & 0xf00) >> 8] & 1;
+    v_[(instruction & 0xf00) >> 8] >>= 1;
+    return true;
+  }
+  // 8xy7 - SUBN Vx, Vy
+  if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x7) {
+    uint16_t right = v_[(instruction & 0x0f0) >> 4];
+    v_[0xf] = right > v_[(instruction & 0xf00) >> 8];
+    v_[(instruction & 0xf00) >> 8] = right - v_[(instruction & 0xf00) >> 8];
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));

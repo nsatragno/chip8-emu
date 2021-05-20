@@ -281,3 +281,58 @@ TEST_F(CpuTest, MathSub) {
   EXPECT_EQ(0xf1, cpu.v(0x1));
   EXPECT_EQ(0x00, cpu.v(0xf));
 }
+
+TEST_F(CpuTest, ShiftRight) {
+  // Add 0x02 to the register 0.
+  ASSERT_TRUE(cpu.execute(0x7002));
+  EXPECT_EQ(0x02, cpu.v(0));
+  EXPECT_EQ(0x00, cpu.v(0xf));
+
+  // Shift right.
+  ASSERT_TRUE(cpu.execute(0x8006));
+  EXPECT_EQ(0x01, cpu.v(0));
+  EXPECT_EQ(0x00, cpu.v(0xf));
+
+  // Shift right.
+  ASSERT_TRUE(cpu.execute(0x8006));
+  EXPECT_EQ(0x00, cpu.v(0));
+  EXPECT_EQ(0x01, cpu.v(0xf));
+}
+
+TEST_F(CpuTest, MathSubn) {
+  // Add 0x10 to the register 0.
+  ASSERT_TRUE(cpu.execute(0x7010));
+  EXPECT_EQ(0x10, cpu.v(0));
+
+  // Add 0x01 to the register 1.
+  ASSERT_TRUE(cpu.execute(0x7101));
+  EXPECT_EQ(0x01, cpu.v(0x1));
+
+  // Set register 1 to register 0 minus register 1.
+  ASSERT_TRUE(cpu.execute(0x8107));
+  EXPECT_EQ(0x10, cpu.v(0));
+  EXPECT_EQ(0x0f, cpu.v(0x1));
+  EXPECT_EQ(0x01, cpu.v(0xf));
+
+  // Set register 0 to f.
+  ASSERT_TRUE(cpu.execute(0x600f));
+  EXPECT_EQ(0x0f, cpu.v(0));
+
+  // Set register 1 to register 0 minus register 1.
+  ASSERT_TRUE(cpu.execute(0x8107));
+  EXPECT_EQ(0x0f, cpu.v(0));
+  EXPECT_EQ(0x00, cpu.v(0x1));
+  EXPECT_EQ(0x00, cpu.v(0xf));
+
+  // Set register 0 to 0.
+  ASSERT_TRUE(cpu.execute(0x6000));
+
+  // Set register 1 to 1.
+  ASSERT_TRUE(cpu.execute(0x6101));
+
+  // Set register 1 to register 0 minus register 1.
+  ASSERT_TRUE(cpu.execute(0x8107));
+  EXPECT_EQ(0x00, cpu.v(0));
+  EXPECT_EQ(0xff, cpu.v(0x1));
+  EXPECT_EQ(0x00, cpu.v(0xf));
+}
