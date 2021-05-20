@@ -10,6 +10,6 @@ void FrameBuffer::set_pixel(uint8_t x, uint8_t y, bool on) {
   if (on) {
     buffer[x % 64] |= 1 << y;
   } else {
-    buffer[x % 64] |= 1 << y;
+    buffer[x % 64] &= ~1u << y;
   }
 }
