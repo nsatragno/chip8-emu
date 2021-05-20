@@ -93,36 +93,42 @@ bool Cpu::execute(uint16_t instruction) {
     v_[(instruction & 0xf00) >> 8] &= v_[(instruction & 0x0f0) >> 4];
     return true;
   }
-  // 8xy3 - XOR Vx, Vy
+  // 8xy3 - XOR Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x3) {
     v_[(instruction & 0xf00) >> 8] ^= v_[(instruction & 0x0f0) >> 4];
     return true;
   }
-  // 8xy4 - ADD Vx, Vy
+  // 8xy4 - ADD Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x4) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
     v_[0xf] = v_[(instruction & 0xf00) >> 8] + right > 0x00ff;
     v_[(instruction & 0xf00) >> 8] += right;
     return true;
   }
-  // 8xy5 - SUB Vx, Vy
+  // 8xy5 - SUB Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x5) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
     v_[0xf] = v_[(instruction & 0xf00) >> 8] > right;
     v_[(instruction & 0xf00) >> 8] -= right;
     return true;
   }
-  // 8xy6 - SHR Vx {, Vy}
+  // 8xy6 - SHR Vx {, Vy}.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x6) {
     v_[0xf] = v_[(instruction & 0xf00) >> 8] & 1;
     v_[(instruction & 0xf00) >> 8] >>= 1;
     return true;
   }
-  // 8xy7 - SUBN Vx, Vy
+  // 8xy7 - SUBN Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x7) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
     v_[0xf] = right > v_[(instruction & 0xf00) >> 8];
     v_[(instruction & 0xf00) >> 8] = right - v_[(instruction & 0xf00) >> 8];
+    return true;
+  }
+  // 8xyE - SHL Vx {, Vy}.
+  if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0xe) {
+    v_[0xf] = (v_[(instruction & 0xf00) >> 8] >> 7) & 1;
+    v_[(instruction & 0xf00) >> 8] <<= 1;
     return true;
   }
 

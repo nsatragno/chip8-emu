@@ -336,3 +336,20 @@ TEST_F(CpuTest, MathSubn) {
   EXPECT_EQ(0xff, cpu.v(0x1));
   EXPECT_EQ(0x00, cpu.v(0xf));
 }
+
+TEST_F(CpuTest, ShiftLeft) {
+  // Add 0x7f to the register 0.
+  ASSERT_TRUE(cpu.execute(0x707f));
+  EXPECT_EQ(0x7f, cpu.v(0));
+  EXPECT_EQ(0x00, cpu.v(0x7f));
+
+  // Shift left.
+  ASSERT_TRUE(cpu.execute(0x800e));
+  EXPECT_EQ(0xfe, cpu.v(0));
+  EXPECT_EQ(0x00, cpu.v(0xf));
+
+  // Shift left.
+  ASSERT_TRUE(cpu.execute(0x800e));
+  EXPECT_EQ(0xfc, cpu.v(0));
+  EXPECT_EQ(0x01, cpu.v(0xf));
+}
