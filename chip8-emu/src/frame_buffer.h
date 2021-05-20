@@ -2,10 +2,14 @@
 
 // A 64 x 32 pixel display framebuffer.
 class FrameBuffer {
-public:
-	// Returns the pixel at coordinates |x|, |y|.
-	bool get_pixel(uint8_t x, uint8_t y);
+ public:
+  // Returns the pixel at coordinates |x|, |y|, wrapping the screen if
+  // necessary.
+  bool get_pixel(uint8_t x, uint8_t y);
 
-private:
-	uint32_t buffer[64] = { {0} };
+  // Sets the pixel at coordinates |x|, |y|, wrapping the screen if necessary.
+  void set_pixel(uint8_t x, uint8_t y, bool on);
+
+ private:
+  uint32_t buffer[64] = {{0}};
 };
