@@ -5,6 +5,7 @@ class Random {
  public:
   Random();
   explicit Random(unsigned int seed);
+  virtual ~Random() = default;
 
   virtual int rand();
 };

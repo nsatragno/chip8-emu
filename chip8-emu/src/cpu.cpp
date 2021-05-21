@@ -3,12 +3,22 @@
 #include "src/logging.h"
 #include "src/util.h"
 
-Cpu::Cpu() : random_(std::make_unique<Random>()) {}
+Cpu::Cpu() : Cpu(std::make_unique<Random>()) {}
 
-Cpu::Cpu(std::unique_ptr<Random> random) : random_(std::move(random)) {}
+Cpu::Cpu(std::unique_ptr<Random> random)
+    : random_(std::move(random)), buffer_(std::make_unique<FrameBuffer>()) {}
 
 uint8_t Cpu::peek(uint16_t address) const {
   return memory_[address];
+}
+
+void Cpu::set_memory(uint16_t address, uint8_t byte) {
+  if (address > kMaxMemory) {
+    logging::log(logging::Level::ERROR,
+                 "Attempted to set memory exceeding " + kMaxMemory);
+    return;
+  }
+  memory_[address] = byte;
 }
 
 bool Cpu::execute(uint16_t instruction) {
@@ -159,9 +169,13 @@ bool Cpu::execute(uint16_t instruction) {
   if (instruction >> 12 == 0xd) {
     uint8_t x = v_[(instruction & 0xf00) >> 8];
     uint8_t y = v_[(instruction & 0x0f0) >> 4];
-    for (size_t i = 0; i < instruction & 0xf; ++i) {
-      buffer_.paint(x, y, memory_[index_ = i]);
+    bool erased = false;
+    for (size_t i = 0; i < (instruction & 0xf); ++i) {
+      if (buffer_->paint(x, y + i, memory_[index_ + i])) {
+        erased = true;
+      }
     }
+    v_[0xf] = erased;
     return true;
   }
 

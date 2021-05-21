@@ -7,6 +7,8 @@ class RandomMock : public Random {
   explicit RandomMock(std::vector<int> numbers)
       : numbers_(std::move(numbers)) {}
 
+  virtual ~RandomMock() = default;
+
   int rand() override { return numbers_.at(index_++ % numbers_.size()); };
 
  private:
@@ -416,4 +418,65 @@ TEST_F(CpuTest, Rnd) {
   // Get a random number but mask everything.
   cpu.execute(0xc200);
   EXPECT_EQ(0x0, cpu.v(0x2));
+}
+
+TEST_F(CpuTest, Paint) {
+  // Set the I register to 0xfae.
+  cpu.execute(0xafae);
+
+  // Set V0 to 0x10.
+  cpu.execute(0x6010);
+
+  // Set V1 to 0x20.
+  cpu.execute(0x6120);
+
+  // Load a two-byte sprite into memory location 0xfae.
+  cpu.set_memory(0xfae, 0b10001000);
+  cpu.set_memory(0xfaf, 0b01111110);
+
+  // Draw a two bytes tall sprite at { V0, V1 } from position I.
+  cpu.execute(0xd012);
+
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x10, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x11, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x12, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x13, 0x20));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x14, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x15, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x16, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x17, 0x20));
+
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x10, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x11, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x12, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x13, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x14, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x15, 0x21));
+  EXPECT_EQ(true, cpu.frame_buffer()->get_pixel(0x16, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x17, 0x21));
+
+  EXPECT_EQ(0, cpu.v(0xf));
+
+  // Draw the same sprite. This should erase all bits.
+  cpu.execute(0xd012);
+
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x10, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x11, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x12, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x13, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x14, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x15, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x16, 0x20));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x17, 0x20));
+
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x10, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x11, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x12, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x13, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x14, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x15, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x16, 0x21));
+  EXPECT_EQ(false, cpu.frame_buffer()->get_pixel(0x17, 0x21));
+
+  EXPECT_EQ(1, cpu.v(0xf));
 }

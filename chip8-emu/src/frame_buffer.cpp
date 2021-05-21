@@ -19,7 +19,7 @@ bool FrameBuffer::paint(uint8_t x, uint8_t y, uint8_t line) {
   return erased;
 }
 
-bool FrameBuffer::get_pixel(uint8_t x, uint8_t y) {
+bool FrameBuffer::get_pixel(uint8_t x, uint8_t y) const {
   return buffer_[x % kScreenWidth].test(y % kScreenHeight);
 }
 
