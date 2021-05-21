@@ -528,3 +528,28 @@ TEST_F(CpuTest, SkipIfKey) {
   ASSERT_TRUE(cpu_->execute(0xe29e));
   EXPECT_EQ(1, cpu_->pc());
 }
+
+TEST_F(CpuTest, SkipIfNotKey) {
+  keyboard_mock_->set_key_pressed(0xa, true);
+
+  // Set V0 to 0x00.
+  ASSERT_TRUE(cpu_->execute(0x6000));
+
+  // Set V1 to 0x0a.
+  ASSERT_TRUE(cpu_->execute(0x610a));
+
+  // Set V2 to 0x10.
+  ASSERT_TRUE(cpu_->execute(0x6210));
+
+  // Skip if key 0 is pressed.
+  ASSERT_TRUE(cpu_->execute(0xe0a1));
+  EXPECT_EQ(1, cpu_->pc());
+
+  // Skip if key a is pressed.
+  ASSERT_TRUE(cpu_->execute(0xe1a1));
+  EXPECT_EQ(1, cpu_->pc());
+
+  // Skip if an invalid key is pressed.
+  ASSERT_TRUE(cpu_->execute(0xe2a1));
+  EXPECT_EQ(2, cpu_->pc());
+}

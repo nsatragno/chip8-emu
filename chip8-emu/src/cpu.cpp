@@ -185,6 +185,13 @@ bool Cpu::execute(uint16_t instruction) {
     }
     return true;
   }
+  // ExA1 - SKNP Vx
+  if (instruction >> 12 == 0xe && (instruction & 0xff) == 0xa1) {
+    if (!keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
+      ++pc_;
+    }
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
