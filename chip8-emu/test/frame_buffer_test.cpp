@@ -67,3 +67,25 @@ TEST_F(FrameBufferTest, SetPixelsWraparound) {
     }
   }
 }
+
+TEST_F(FrameBufferTest, Paint) {
+  EXPECT_FALSE(frame_buffer.paint(10, 10, 0b10100111));
+  EXPECT_EQ(1, frame_buffer.get_pixel(10, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(11, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(12, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(13, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(14, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(15, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(16, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(17, 10));
+
+  EXPECT_TRUE(frame_buffer.paint(10, 10, 0b10000000));
+  EXPECT_EQ(0, frame_buffer.get_pixel(10, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(11, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(12, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(13, 10));
+  EXPECT_EQ(0, frame_buffer.get_pixel(14, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(15, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(16, 10));
+  EXPECT_EQ(1, frame_buffer.get_pixel(17, 10));
+}

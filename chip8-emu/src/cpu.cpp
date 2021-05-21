@@ -155,6 +155,15 @@ bool Cpu::execute(uint16_t instruction) {
     v_[(instruction & 0xf00) >> 8] = random_->rand() & (instruction & 0xff);
     return true;
   }
+  // Dxyn - DRW Vx, Vy, nibble
+  if (instruction >> 12 == 0xd) {
+    uint8_t x = v_[(instruction & 0xf00) >> 8];
+    uint8_t y = v_[(instruction & 0x0f0) >> 4];
+    for (size_t i = 0; i < instruction & 0xf; ++i) {
+      buffer_.paint(x, y, memory_[index_ = i]);
+    }
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));

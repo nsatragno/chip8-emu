@@ -5,6 +5,20 @@
 #include <bitset>
 #include <iostream>
 
+bool FrameBuffer::paint(uint8_t x, uint8_t y, uint8_t line) {
+  std::bitset<8> bits(line);
+  bool erased = false;
+  for (size_t i = 0; i < bits.size(); ++i) {
+    bool existing = get_pixel(x + i, y);
+    bool bit = bits[bits.size() - 1 - i];
+    if (existing & bit) {
+      erased = true;
+    }
+    set_pixel(x + i, y, existing ^ bit);
+  }
+  return erased;
+}
+
 bool FrameBuffer::get_pixel(uint8_t x, uint8_t y) {
   return buffer_[x % kScreenWidth].test(y % kScreenHeight);
 }
