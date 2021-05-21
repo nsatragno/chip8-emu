@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "src/frame_buffer.h"
+#include "src/keyboard.h"
 #include "src/random.h"
 
 // A CHIP-8 complete CPU.
@@ -18,9 +19,8 @@ class Cpu {
   // The size of the program stack.
   static constexpr unsigned int kStackSize = 32;
 
-  Cpu();
-
-  explicit Cpu(std::unique_ptr<Random> random);
+  // |random| and |keyboard| must outlive this instance.
+  Cpu(Random* random, Keyboard* keyboard);
 
   // Returns the contents of memory at |address|.
   uint8_t peek(uint16_t address) const;
@@ -53,5 +53,6 @@ class Cpu {
 
   uint8_t memory_[kMaxMemory + 1] = {{0}};
 
-  const std::unique_ptr<Random> random_;
+  Random* random_;
+  Keyboard* keyboard_;
 };

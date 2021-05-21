@@ -3,10 +3,10 @@
 #include "src/logging.h"
 #include "src/util.h"
 
-Cpu::Cpu() : Cpu(std::make_unique<Random>()) {}
-
-Cpu::Cpu(std::unique_ptr<Random> random)
-    : random_(std::move(random)), buffer_(std::make_unique<FrameBuffer>()) {}
+Cpu::Cpu(Random* random, Keyboard* keyboard)
+    : random_(random),
+      keyboard_(keyboard),
+      buffer_(std::make_unique<FrameBuffer>()) {}
 
 uint8_t Cpu::peek(uint16_t address) const {
   return memory_[address];
@@ -176,6 +176,13 @@ bool Cpu::execute(uint16_t instruction) {
       }
     }
     v_[0xf] = erased;
+    return true;
+  }
+  // Ex9E - SKP Vx
+  if (instruction >> 12 == 0xe && (instruction & 0xff) == 0x9e) {
+    if (keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
+      ++pc_;
+    }
     return true;
   }
 
