@@ -553,3 +553,15 @@ TEST_F(CpuTest, SkipIfNotKey) {
   ASSERT_TRUE(cpu_->execute(0xe2a1));
   EXPECT_EQ(2, cpu_->pc());
 }
+
+TEST_F(CpuTest, LoadDelayTimer) {
+  // Set V0 to 0x10.
+  ASSERT_TRUE(cpu_->execute(0x6010));
+
+  // Copy register V0 into the delay timer.
+  ASSERT_TRUE(cpu_->execute(0xf015));
+
+  // Copy the delay timer into register V1.
+  ASSERT_TRUE(cpu_->execute(0xf107));
+  EXPECT_EQ(0x10, cpu_->v(0x1));
+}

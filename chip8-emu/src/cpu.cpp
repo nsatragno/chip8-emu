@@ -192,6 +192,16 @@ bool Cpu::execute(uint16_t instruction) {
     }
     return true;
   }
+  // Fx07 - LD Vx, DT
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x07) {
+    v_[(instruction & 0xf00) >> 8] = delay_;
+    return true;
+  }
+  // Fx15 - LD DT, Vx
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x15) {
+    delay_ = v_[(instruction & 0xf00) >> 8];
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
