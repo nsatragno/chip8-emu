@@ -2,6 +2,18 @@
 
 #include "src/cpu.h"
 
+class RandomMock : public Random {
+ public:
+  explicit RandomMock(std::vector<int> numbers)
+      : numbers_(std::move(numbers)) {}
+
+  int rand() override { return numbers_.at(index_++ % numbers_.size()); };
+
+ private:
+  std::vector<int> numbers_;
+  size_t index_ = 0;
+};
+
 class CpuTest : public testing::Test {
  protected:
   Cpu cpu;
@@ -352,4 +364,56 @@ TEST_F(CpuTest, ShiftLeft) {
   ASSERT_TRUE(cpu.execute(0x800e));
   EXPECT_EQ(0xfc, cpu.v(0));
   EXPECT_EQ(0x01, cpu.v(0xf));
+}
+
+TEST_F(CpuTest, SkipInstructionIfNotEqualsRegister) {
+  EXPECT_EQ(0, cpu.pc());
+
+  // Load into register 0 the value 90.
+  ASSERT_TRUE(cpu.execute(0x6090));
+
+  // Load into register f the value 90.
+  ASSERT_TRUE(cpu.execute(0x6f90));
+
+  // Skip if registers 0 and f are not equal.
+  ASSERT_TRUE(cpu.execute(0x90f0));
+  EXPECT_EQ(0, cpu.pc());
+
+  // Skip if registers 0 and e are not equal.
+  ASSERT_TRUE(cpu.execute(0x90e0));
+  EXPECT_EQ(1, cpu.pc());
+}
+
+TEST_F(CpuTest, LoadIndex) {
+  EXPECT_EQ(0, cpu.index());
+  ASSERT_TRUE(cpu.execute(0xa123));
+  EXPECT_EQ(0x123, cpu.index());
+}
+
+TEST_F(CpuTest, JmpV0) {
+  EXPECT_EQ(0, cpu.pc());
+
+  // Load into register 0 the value 90.
+  ASSERT_TRUE(cpu.execute(0x6090));
+
+  // Jump V0 + 105.
+  ASSERT_TRUE(cpu.execute(0xb105));
+  EXPECT_EQ(0x195, cpu.pc());
+}
+
+TEST_F(CpuTest, Rnd) {
+  auto random_mock = std::make_unique<RandomMock>(std::vector { 0xaf, 0x11, 0x30 });
+  Cpu cpu(std::move(random_mock));
+
+  // Get a random number masking the last 4 bits.
+  cpu.execute(0xc0f0);
+  EXPECT_EQ(0xa0, cpu.v(0x0));
+
+  // Get a random number without masking.
+  cpu.execute(0xc1ff);
+  EXPECT_EQ(0x11, cpu.v(0x1));
+
+  // Get a random number but mask everything.
+  cpu.execute(0xc200);
+  EXPECT_EQ(0x0, cpu.v(0x2));
 }

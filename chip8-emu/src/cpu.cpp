@@ -1,9 +1,11 @@
 #include "src/cpu.h"
 
-#include <iostream>
-
 #include "src/logging.h"
 #include "src/util.h"
+
+Cpu::Cpu() : random_(std::make_unique<Random>()) {}
+
+Cpu::Cpu(std::unique_ptr<Random> random) : random_(std::move(random)) {}
 
 uint8_t Cpu::peek(uint16_t address) const {
   return memory_[address];
@@ -129,6 +131,28 @@ bool Cpu::execute(uint16_t instruction) {
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0xe) {
     v_[0xf] = (v_[(instruction & 0xf00) >> 8] >> 7) & 1;
     v_[(instruction & 0xf00) >> 8] <<= 1;
+    return true;
+  }
+  // 9xy0 - SNE Vx, Vy.
+  if (instruction >> 12 == 0x9 && (instruction & 0xf) == 0) {
+    if (v_[(instruction & 0xf00) >> 8] != v_[(instruction & 0x0f0) >> 4]) {
+      pc_ += 1;
+    }
+    return true;
+  }
+  // annn - LD I, addr.
+  if (instruction >> 12 == 0xa) {
+    index_ = instruction & 0xfff;
+    return true;
+  }
+  // bnnn - JP V0, addr.
+  if (instruction >> 12 == 0xb) {
+    pc_ = (instruction & 0xfff) + v_[0];
+    return true;
+  }
+  // Cxkk - RND Vx, byte
+  if (instruction >> 12 == 0xc) {
+    v_[(instruction & 0xf00) >> 8] = random_->rand() & (instruction & 0xff);
     return true;
   }
 

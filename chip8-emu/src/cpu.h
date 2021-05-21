@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 #include "src/frame_buffer.h"
+#include "src/random.h"
 
 // A CHIP-8 complete CPU.
 class Cpu {
@@ -16,6 +18,10 @@ class Cpu {
   // The size of the program stack.
   static constexpr unsigned int kStackSize = 32;
 
+  Cpu();
+
+  explicit Cpu(std::unique_ptr<Random> random);
+
   // Returns the contents of memory at |address|.
   uint8_t peek(uint16_t address) const;
 
@@ -28,9 +34,11 @@ class Cpu {
 
   uint16_t v(uint8_t index) { return v_[index]; }
 
+  uint16_t index() { return index_; }
+
  private:
   uint8_t v_[16] = {{0}};
-  uint16_t index_;
+  uint16_t index_ = 0;
   FrameBuffer buffer_;
   uint16_t stack_[kStackSize];
   uint8_t sp_ = 0;
@@ -39,4 +47,6 @@ class Cpu {
   uint16_t pc_ = 0;
 
   uint8_t memory_[kMaxMemory + 1] = {{0}};
+
+  const std::unique_ptr<Random> random_;
 };

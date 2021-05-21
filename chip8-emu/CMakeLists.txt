@@ -7,7 +7,7 @@ project ("chip8-emu")
 set(CMAKE_CXX_STANDARD 17)
 
 # Add source to this project's executable.
-add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp")
+add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "src/random.h" "src/random.cpp")
 
 set(BASEPATH "${CMAKE_SOURCE_DIR}")
 include_directories("${BASEPATH}")
@@ -27,7 +27,7 @@ enable_testing()
 add_executable(
  "tests"
  "test/cpu_test.cpp"
- "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "test/frame_buffer_test.cpp")
+ "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "test/frame_buffer_test.cpp" "src/random.h" "src/random.cpp")
 target_link_libraries(
   tests
   gtest_main
