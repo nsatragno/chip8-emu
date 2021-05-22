@@ -35,6 +35,10 @@ class Cpu : Keyboard::KeyboardObserver {
   // otherwise.
   bool execute(uint16_t instruction);
 
+  // Attempts to load the chip 8 file |path|. Returns true if successful, false
+  // otherwise.
+  bool load(const std::string& path);
+
   uint16_t pc() const { return pc_; }
 
   uint16_t v(uint8_t index) const { return v_[index]; }

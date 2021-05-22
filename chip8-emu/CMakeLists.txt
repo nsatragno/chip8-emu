@@ -7,7 +7,7 @@ project ("chip8-emu")
 set(CMAKE_CXX_STANDARD 17)
 
 # Add source to this project's executable.
-add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp")
+add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp" "src/sf_keyboard_adapter.h" "src/sf_keyboard_adapter.cpp")
 set(BASEPATH "${CMAKE_SOURCE_DIR}")
 include_directories("${BASEPATH}")
 
@@ -45,7 +45,7 @@ enable_testing()
 add_executable(
  chip8-tests
  "test/cpu_test.cpp"
- "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "test/frame_buffer_test.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp")
+ "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "test/frame_buffer_test.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp" "src/sf_keyboard_adapter.h" "src/sf_keyboard_adapter.cpp")
 target_link_libraries(
   chip8-tests
   gtest_main

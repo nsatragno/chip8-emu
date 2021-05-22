@@ -1,5 +1,7 @@
 #include "src/cpu.h"
 
+#include <fstream>
+
 #include "src/logging.h"
 #include "src/util.h"
 
@@ -251,7 +253,7 @@ bool Cpu::execute(uint16_t instruction) {
     }
     return true;
   }
-  // Fx65 - LD Vx, [I]
+  // Fx65 - LD Vx, [I].
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x65) {
     uint8_t registers = (instruction & 0xf00) >> 8;
     for (uint8_t reg = 0; reg <= registers; ++reg) {
@@ -263,6 +265,27 @@ bool Cpu::execute(uint16_t instruction) {
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
   return false;
+}
+
+bool Cpu::load(const std::string& path) {
+  std::ifstream file(path, std::ifstream::binary);
+  if (!file) {
+    logging::log(logging::Level::ERROR, "Could not open file " + path);
+    return false;
+  }
+  file.seekg(0, file.end);
+  int length = file.tellg();
+  file.seekg(0, file.beg);
+
+  const int kMaxRead = kMaxMemory - kMinAddressableMemory;
+  if (length > kMaxRead) {
+    logging::log(logging::Level::WARN,
+                 "File " + path + " exceeds maximum size, ignoring last bytes");
+  }
+  file.read((char*)(memory_) + kMinAddressableMemory, kMaxMemory);
+  logging::log(logging::Level::INFO, "File " + path + " loaded successfully");
+  pc_ = kMinAddressableMemory;
+  return true;
 }
 
 void Cpu::on_key_pressed(uint8_t key) {
