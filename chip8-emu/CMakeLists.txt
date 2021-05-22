@@ -4,12 +4,14 @@
 cmake_minimum_required (VERSION 3.14)
 
 project ("chip8-emu")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Add source to this project's executable.
 add_executable(chip8-emu "src/chip8-emu.cpp" "src/chip8-emu.h" "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp")
 set(BASEPATH "${CMAKE_SOURCE_DIR}")
 include_directories("${BASEPATH}")
+
+install(TARGETS chip8-emu DESTINATION bin)
 
 # SFML.
 add_subdirectory("lib/sfml/")
@@ -17,6 +19,9 @@ find_package(SFML 2.5.1
   COMPONENTS 
     system window graphics audio REQUIRED)
 target_link_libraries(chip8-emu sfml-window sfml-graphics)
+
+file(COPY "${BASEPATH}/roms" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY "${BASEPATH}/resources" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(TARGET chip8-emu POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
