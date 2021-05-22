@@ -41,6 +41,8 @@ class Cpu : Keyboard::KeyboardObserver {
 
   uint16_t index() const { return index_; }
 
+  uint16_t sound() const { return sound_; }
+
   FrameBuffer const * frame_buffer() const { return buffer_.get(); }
 
  protected:

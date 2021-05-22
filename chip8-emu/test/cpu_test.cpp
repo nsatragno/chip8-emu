@@ -578,4 +578,36 @@ TEST_F(CpuTest, WaitForKeyboard) {
   EXPECT_EQ(0, cpu_->v(0x0));
   keyboard_mock_->set_key_pressed(0xb, true);
   EXPECT_EQ(0xb, cpu_->v(0x0));
+  ASSERT_TRUE(cpu_->execute(0xf00a));  // No longer waiting for a keypress.
+}
+
+TEST_F(CpuTest, LoadSound) {
+  // Set Ve to 0x10.
+  ASSERT_TRUE(cpu_->execute(0x6e10));
+
+  // Set sound timer to Ve.
+  ASSERT_TRUE(cpu_->execute(0xfe18));
+  ASSERT_EQ(0x10, cpu_->sound());
+}
+
+TEST_F(CpuTest, AddIndex) {
+  // Set Ve to 0x10.
+  ASSERT_TRUE(cpu_->execute(0x6e10));
+
+  // Add Ve.
+  ASSERT_TRUE(cpu_->execute(0xfe1e));
+  EXPECT_EQ(0x10, cpu_->index());
+
+  // Add Ve.
+  ASSERT_TRUE(cpu_->execute(0xfe1e));
+  EXPECT_EQ(0x20, cpu_->index());
+}
+
+TEST_F(CpuTest, LoadDigit) {
+  // Set Ve to 0xf.
+  ASSERT_TRUE(cpu_->execute(0x6e0f));
+
+  // Load the address for sprite f.
+  ASSERT_TRUE(cpu_->execute(0xfe29));
+  EXPECT_EQ(0x4b, cpu_->index());
 }

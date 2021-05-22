@@ -172,12 +172,12 @@ bool Cpu::execute(uint16_t instruction) {
     pc_ = (instruction & 0xfff) + v_[0];
     return true;
   }
-  // Cxkk - RND Vx, byte
+  // Cxkk - RND Vx, byte.
   if (instruction >> 12 == 0xc) {
     v_[(instruction & 0xf00) >> 8] = random_->rand() & (instruction & 0xff);
     return true;
   }
-  // Dxyn - DRW Vx, Vy, nibble
+  // Dxyn - DRW Vx, Vy, nibble.
   if (instruction >> 12 == 0xd) {
     uint8_t x = v_[(instruction & 0xf00) >> 8];
     uint8_t y = v_[(instruction & 0x0f0) >> 4];
@@ -190,36 +190,52 @@ bool Cpu::execute(uint16_t instruction) {
     v_[0xf] = erased;
     return true;
   }
-  // Ex9E - SKP Vx
+  // Ex9E - SKP Vx.
   if (instruction >> 12 == 0xe && (instruction & 0xff) == 0x9e) {
     if (keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
       ++pc_;
     }
     return true;
   }
-  // ExA1 - SKNP Vx
+  // ExA1 - SKNP Vx.
   if (instruction >> 12 == 0xe && (instruction & 0xff) == 0xa1) {
     if (!keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
       ++pc_;
     }
     return true;
   }
-  // Fx07 - LD Vx, DT
+  // Fx07 - LD Vx, DT.
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x07) {
     v_[(instruction & 0xf00) >> 8] = delay_;
     return true;
   }
-  // Fx0A - LD Vx, K
+  // Fx0A - LD Vx, K.
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x0a) {
     key_store_register_ = (instruction & 0xf00) >> 8;
     waiting_for_key_press_ = true;
     return true;
   }
-  // Fx15 - LD DT, Vx
+  // Fx15 - LD DT, Vx.
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x15) {
     delay_ = v_[(instruction & 0xf00) >> 8];
     return true;
   }
+  // Fx18 - LD ST, Vx.
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x18) {
+    sound_ = v_[(instruction & 0xf00) >> 8];
+    return true;
+  }
+  // Fx1E - ADD I, Vx.
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x1e) {
+    index_ += v_[(instruction & 0xf00) >> 8];
+    return true;
+  }
+  // Fx29 - LD F, Vx
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x29) {
+    index_ += v_[(instruction & 0xf00) >> 8] * 5;
+    return true;
+  }
+
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
