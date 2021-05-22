@@ -15,6 +15,7 @@ std::string printLevel(Level level) {
     case Level::ERROR:
       return "ERROR";
   }
+  return "UNKNOWN";
 }
 
 void log(Level level, const std::string& text) {

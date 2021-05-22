@@ -9,8 +9,7 @@
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "addressSanitizerEnabled": true
+      "ctestCommandArgs": ""
     }
   ]
 }

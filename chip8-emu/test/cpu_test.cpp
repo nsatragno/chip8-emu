@@ -42,7 +42,7 @@ class KeyboardMock : public Keyboard {
 class CpuTest : public testing::Test {
  protected:
   CpuTest() {
-    random_mock_ = std::make_unique<RandomMock>(std::vector{0xaf, 0x11, 0x30});
+    random_mock_ = std::make_unique<RandomMock>(std::vector<int>{0xaf, 0x11, 0x30});
     keyboard_mock_ = std::make_unique<KeyboardMock>();
     cpu_ = std::make_unique<Cpu>(random_mock_.get(), keyboard_mock_.get());
   }
