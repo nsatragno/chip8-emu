@@ -28,7 +28,12 @@ class KeyboardMock : public Keyboard {
     return keys_[key];
   }
 
-  void set_key_pressed(uint8_t key, bool value) { keys_[key] = value; }
+  void set_key_pressed(uint8_t key, bool value) {
+    keys_[key] = value;
+    if (value) {
+      Keyboard::dispatch_key_pressed(key);
+    }
+  }
 
  private:
   bool keys_[0xf] = {{false}};
@@ -42,9 +47,9 @@ class CpuTest : public testing::Test {
     cpu_ = std::make_unique<Cpu>(random_mock_.get(), keyboard_mock_.get());
   }
 
-  std::unique_ptr<Cpu> cpu_;
   std::unique_ptr<RandomMock> random_mock_;
   std::unique_ptr<KeyboardMock> keyboard_mock_;
+  std::unique_ptr<Cpu> cpu_;
 };
 
 TEST_F(CpuTest, Initialization) {
@@ -564,4 +569,13 @@ TEST_F(CpuTest, LoadDelayTimer) {
   // Copy the delay timer into register V1.
   ASSERT_TRUE(cpu_->execute(0xf107));
   EXPECT_EQ(0x10, cpu_->v(0x1));
+}
+
+TEST_F(CpuTest, WaitForKeyboard) {
+  // Wait for a keypress and store the result on V0.
+  ASSERT_TRUE(cpu_->execute(0xf00a));
+  ASSERT_FALSE(cpu_->execute(0xf00a));  // Already waiting for a keypress.
+  EXPECT_EQ(0, cpu_->v(0x0));
+  keyboard_mock_->set_key_pressed(0xb, true);
+  EXPECT_EQ(0xb, cpu_->v(0x0));
 }

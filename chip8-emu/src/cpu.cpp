@@ -6,7 +6,13 @@
 Cpu::Cpu(Random* random, Keyboard* keyboard)
     : random_(random),
       keyboard_(keyboard),
-      buffer_(std::make_unique<FrameBuffer>()) {}
+      buffer_(std::make_unique<FrameBuffer>()) {
+  keyboard_->add_observer(this);
+}
+
+Cpu::~Cpu() {
+  keyboard_->remove_observer(this);
+}
 
 uint8_t Cpu::peek(uint16_t address) const {
   return memory_[address];
@@ -22,6 +28,12 @@ void Cpu::set_memory(uint16_t address, uint8_t byte) {
 }
 
 bool Cpu::execute(uint16_t instruction) {
+  if (waiting_for_key_press_) {
+    logging::log(
+        logging::Level::ERROR,
+        "Attempted to execute an instruction while waiting for a key press");
+    return false;
+  }
 
   // 00e0 - CLS.
   if (instruction == 0x00e0) {
@@ -197,6 +209,12 @@ bool Cpu::execute(uint16_t instruction) {
     v_[(instruction & 0xf00) >> 8] = delay_;
     return true;
   }
+  // Fx0A - LD Vx, K
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x0a) {
+    key_store_register_ = (instruction & 0xf00) >> 8;
+    waiting_for_key_press_ = true;
+    return true;
+  }
   // Fx15 - LD DT, Vx
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x15) {
     delay_ = v_[(instruction & 0xf00) >> 8];
@@ -206,4 +224,12 @@ bool Cpu::execute(uint16_t instruction) {
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
   return false;
+}
+
+void Cpu::on_key_pressed(uint8_t key) {
+  if (!waiting_for_key_press_) {
+    return;
+  }
+  v_[key_store_register_] = key;
+  waiting_for_key_press_ = false;
 }
