@@ -633,3 +633,17 @@ TEST_F(CpuTest, LoadDigit) {
   ASSERT_TRUE(cpu_->execute(0xfe29));
   EXPECT_EQ(0x4b, cpu_->index());
 }
+
+TEST_F(CpuTest, LoadBcd) {
+  // Set Ve to 123;
+  ASSERT_TRUE(cpu_->execute(0x6e7b));
+
+  // Set I to 123.
+  ASSERT_TRUE(cpu_->execute(0xa123));
+
+  // Load the BCD representation of 123 into 0x123, 0x124, and 0x125.
+  ASSERT_TRUE(cpu_->execute(0xfe33));
+  EXPECT_EQ(1, cpu_->peek(0x123));
+  EXPECT_EQ(2, cpu_->peek(0x124));
+  EXPECT_EQ(3, cpu_->peek(0x125));
+}

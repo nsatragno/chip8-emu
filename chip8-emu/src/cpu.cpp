@@ -235,6 +235,14 @@ bool Cpu::execute(uint16_t instruction) {
     index_ += v_[(instruction & 0xf00) >> 8] * 5;
     return true;
   }
+  // Fx33 - LD B, Vx
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x33) {
+    uint8_t value = v_[(instruction & 0xf00) >> 8];
+    memory_[index_] = value / 100;
+    memory_[index_ + 1] = (value / 10) % 10;
+    memory_[index_ + 2] = value % 10;
+    return true;
+  }
 
 
   logging::log(logging::Level::ERROR,
