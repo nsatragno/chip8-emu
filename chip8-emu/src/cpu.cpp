@@ -251,7 +251,14 @@ bool Cpu::execute(uint16_t instruction) {
     }
     return true;
   }
-
+  // Fx65 - LD Vx, [I]
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x65) {
+    uint8_t registers = (instruction & 0xf00) >> 8;
+    for (uint8_t reg = 0; reg <= registers; ++reg) {
+      v_[reg] = memory_[index_++];
+    }
+    return true;
+  }
 
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));

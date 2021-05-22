@@ -672,3 +672,23 @@ TEST_F(CpuTest, StoreRegisters) {
   EXPECT_EQ(0, cpu_->peek(0x126));
   EXPECT_EQ(0x126, cpu_->index());
 }
+
+TEST_F(CpuTest, LoadRegisters) {
+  // Set I to 123.
+  ASSERT_TRUE(cpu_->execute(0xa123));
+
+  // Store 1 through 4 contiguously starting at 0x123.
+  cpu_->set_memory(0x123, 1);
+  cpu_->set_memory(0x124, 2);
+  cpu_->set_memory(0x125, 3);
+  cpu_->set_memory(0x126, 4);
+
+  // Load V0 through V2 from 0x123.
+  ASSERT_TRUE(cpu_->execute(0xf265));
+
+  EXPECT_EQ(1, cpu_->v(0));
+  EXPECT_EQ(2, cpu_->v(1));
+  EXPECT_EQ(3, cpu_->v(2));
+  EXPECT_EQ(0, cpu_->v(3));
+  EXPECT_EQ(0x126, cpu_->index());
+}
