@@ -38,12 +38,21 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
- "tests"
+ chip8-tests
  "test/cpu_test.cpp"
  "src/cpu.h" "src/cpu.cpp" "src/logging.h" "src/logging.cpp" "src/util.h" "src/util.cpp" "src/frame_buffer.cpp" "test/frame_buffer_test.cpp" "src/random.h" "src/random.cpp" "src/keyboard.h"  "src/keyboard.cpp")
 target_link_libraries(
-  tests
+  chip8-tests
   gtest_main
 )
+
+add_custom_command(TARGET chip8-tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/bin/gmock_maind.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}/bin/gmockd.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}/bin/gtest_maind.dll"
+        "${CMAKE_CURRENT_BINARY_DIR}/bin/gtestd.dll"
+        ${CMAKE_CURRENT_BINARY_DIR})
+
 include(GoogleTest)
-gtest_discover_tests(tests)
+gtest_discover_tests(chip8-tests)
