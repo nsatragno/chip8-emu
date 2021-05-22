@@ -37,8 +37,8 @@ bool Cpu::execute(uint16_t instruction) {
 
   // 00e0 - CLS.
   if (instruction == 0x00e0) {
-    // TODO: not implemented.
-    return false;
+    buffer_->clear_screen();
+    return true;
   }
   // 00ee - RET.
   if (instruction == 0x00ee) {

@@ -507,6 +507,28 @@ TEST_F(CpuTest, Paint) {
   EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x17, 0x21));
 
   EXPECT_EQ(1, cpu_->v(0xf));
+
+  // Draw a one byte tall sprite at { V0, V1 } from position I.
+  ASSERT_TRUE(cpu_->execute(0xd011));
+
+  EXPECT_EQ(true, cpu_->frame_buffer()->get_pixel(0x10, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x11, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x12, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x13, 0x20));
+  EXPECT_EQ(true, cpu_->frame_buffer()->get_pixel(0x14, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x15, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x16, 0x20));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x17, 0x20));
+
+  EXPECT_EQ(0, cpu_->v(0xf));
+
+  // Clear the screen.
+  ASSERT_TRUE(cpu_->execute(0x00e0));
+  for (size_t x = 0; x < FrameBuffer::kScreenWidth; ++x) {
+    for (size_t y = 0; y < FrameBuffer::kScreenHeight; ++y) {
+      EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(x, y));
+    }
+  }
 }
 
 TEST_F(CpuTest, SkipIfKey) {
