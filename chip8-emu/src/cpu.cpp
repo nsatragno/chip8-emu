@@ -230,17 +230,25 @@ bool Cpu::execute(uint16_t instruction) {
     index_ += v_[(instruction & 0xf00) >> 8];
     return true;
   }
-  // Fx29 - LD F, Vx
+  // Fx29 - LD F, Vx.
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x29) {
     index_ += v_[(instruction & 0xf00) >> 8] * 5;
     return true;
   }
-  // Fx33 - LD B, Vx
+  // Fx33 - LD B, Vx.
   if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x33) {
     uint8_t value = v_[(instruction & 0xf00) >> 8];
     memory_[index_] = value / 100;
     memory_[index_ + 1] = (value / 10) % 10;
     memory_[index_ + 2] = value % 10;
+    return true;
+  }
+  // Fx55 - LD [I], Vx.
+  if (instruction >> 12 == 0xf && (instruction & 0xff) == 0x55) {
+    uint8_t registers = (instruction & 0xf00) >> 8;
+    for (uint8_t reg = 0; reg <= registers; ++reg) {
+      memory_[index_++] = v_[reg];
+    }
     return true;
   }
 

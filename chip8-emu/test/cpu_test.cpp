@@ -647,3 +647,28 @@ TEST_F(CpuTest, LoadBcd) {
   EXPECT_EQ(2, cpu_->peek(0x124));
   EXPECT_EQ(3, cpu_->peek(0x125));
 }
+
+TEST_F(CpuTest, StoreRegisters) {
+  // Set V0 to 1;
+  ASSERT_TRUE(cpu_->execute(0x6001));
+
+  // Set V1 to 2;
+  ASSERT_TRUE(cpu_->execute(0x6102));
+
+  // Set V2 to 3;
+  ASSERT_TRUE(cpu_->execute(0x6203));
+
+  // Set V3 to 4;
+  ASSERT_TRUE(cpu_->execute(0x6304));
+
+  // Set I to 123.
+  ASSERT_TRUE(cpu_->execute(0xa123));
+
+  // Store V0 through V2 into memory address 0x123.
+  ASSERT_TRUE(cpu_->execute(0xf255));
+  EXPECT_EQ(1, cpu_->peek(0x123));
+  EXPECT_EQ(2, cpu_->peek(0x124));
+  EXPECT_EQ(3, cpu_->peek(0x125));
+  EXPECT_EQ(0, cpu_->peek(0x126));
+  EXPECT_EQ(0x126, cpu_->index());
+}
