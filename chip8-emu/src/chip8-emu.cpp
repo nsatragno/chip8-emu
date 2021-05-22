@@ -43,19 +43,17 @@ int main() {
   }
 
   std::vector<sf::Text> rom_labels;
-  for (size_t i = 0; i < roms.size();  ++i) {
-    sf::Text text(roms[i], font);
-    text.setPosition(100, 125 + i * 50);
+  for (const auto& rom : roms) {
+    sf::Text text(rom, font);
     text.setFillColor(kForegroundColor);
     rom_labels.push_back(std::move(text));
   }
 
-  size_t selected_index = 0;
+  int selected_index = 0;
   sf::Text chevron(">", font);
   chevron.setFillColor(kForegroundColor);
 
   sf::Text title("chip8 emulator", font);
-  title.setPosition(300, 50);
   title.setFillColor(kForegroundColor);
 
   while (window.isOpen()) {
@@ -68,15 +66,33 @@ int main() {
 
       if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::Down) {
-          selected_index -= 1;
+          ++selected_index;
         }
         if (event.key.code == sf::Keyboard::Up) {
-          selected_index += 1;
+          --selected_index;
+        }
+        if (selected_index < 0) {
+          selected_index = rom_labels.size() - 1;
         }
         selected_index %= rom_labels.size();
       }
     }
     chevron.setPosition(75, 125 + selected_index * 50);
+    if (selected_index > 4) {
+      chevron.move(0, -(selected_index - 4) * 50);
+    }
+
+    title.setPosition(300, 50);
+    if (selected_index > 4) {
+      title.move(0, -(selected_index - 4) * 50);
+    }
+        
+    for (size_t i = 0; i < rom_labels.size(); ++i) {
+      rom_labels[i].setPosition(100, 125 + i * 50);
+      if (selected_index > 4) {
+        rom_labels[i].move(0, -(selected_index - 4) * 50);
+      }
+    }
 
     window.clear(kBackgroundColor);
 
