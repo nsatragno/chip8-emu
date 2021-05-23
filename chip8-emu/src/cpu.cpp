@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "src/font_set.h"
 #include "src/logging.h"
 #include "src/util.h"
 
@@ -10,6 +11,9 @@ Cpu::Cpu(Random* random, Keyboard* keyboard)
       keyboard_(keyboard),
       buffer_(std::make_unique<FrameBuffer>()) {
   keyboard_->add_observer(this);
+  for (int i = 0; i < kFontSet.size(); ++i) {
+    memory_[i] = kFontSet[i];
+  }
 }
 
 Cpu::~Cpu() {
@@ -268,9 +272,18 @@ bool Cpu::execute(uint16_t instruction) {
 }
 
 bool Cpu::step() {
+  if (waiting_for_key_press_) {
+    return true;
+  }
   bool result = execute((static_cast<uint16_t>(memory_[pc_] << 8) | memory_[pc_ + 1]));
   if (result) {
     pc_ += 2;
+    if (sound_ > 0) {
+      --sound_;
+    }
+    if (delay_ > 0) {
+      --delay_;
+    }
   }
   return result;
 }
