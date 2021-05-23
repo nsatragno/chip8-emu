@@ -39,6 +39,9 @@ class Cpu : Keyboard::KeyboardObserver {
   // Executes the next instruction and updates the program counter.
   bool step();
 
+  // Updates the delay and sound timers, decrementing them if necessary.
+  void update_timers();
+
   // Attempts to load the chip 8 file |path|. Returns true if successful, false
   // otherwise.
   bool load(const std::string& path);

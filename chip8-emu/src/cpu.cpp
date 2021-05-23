@@ -278,14 +278,17 @@ bool Cpu::step() {
   bool result = execute((static_cast<uint16_t>(memory_[pc_] << 8) | memory_[pc_ + 1]));
   if (result) {
     pc_ += 2;
-    if (sound_ > 0) {
-      --sound_;
-    }
-    if (delay_ > 0) {
-      --delay_;
-    }
   }
   return result;
+}
+
+void Cpu::update_timers() {
+  if (sound_ > 0) {
+    --sound_;
+  }
+  if (delay_ > 0) {
+    --delay_;
+  }
 }
 
 bool Cpu::load(const std::string& path) {

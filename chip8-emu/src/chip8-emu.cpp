@@ -133,9 +133,12 @@ int main() {
           keyboard->on_key_pressed(event.key.code);
         }
       }
-      if (!cpu->step()) {
-        return -1;
+      for (int i = 0; i < 10; ++i) {
+        if (!cpu->step()) {
+          return -1;
+        }
       }
+      cpu->update_timers();
       cpu->frame_buffer()->draw(&window);
     }
 
