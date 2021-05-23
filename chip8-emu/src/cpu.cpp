@@ -59,7 +59,7 @@ bool Cpu::execute(uint16_t instruction) {
   }
   // 1nnn - JP addr.
   if (instruction >> 12 == 0x1) {
-    pc_ = (instruction & 0xfff) - 1;
+    pc_ = (instruction & 0xfff) - 2;
     return true;
   }
   // 2nnn - CALL addr.
@@ -70,27 +70,27 @@ bool Cpu::execute(uint16_t instruction) {
     }
     stack_[sp_] = pc_;
     ++sp_;
-    pc_ = instruction & 0xfff - 1;
+    pc_ = instruction & 0xfff - 2;
     return true;
   }
   // 3xkk - SE Vx, byte.
   if (instruction >> 12 == 0x3) {
     if (v_[(instruction & 0xf00) >> 8] == (instruction & 0x0ff)) {
-      pc_ += 1;
+      pc_ += 2;
     }
     return true;
   }
   // 4xkk - SNE Vx, byte.
   if (instruction >> 12 == 0x4) {
     if (v_[(instruction & 0xf00) >> 8] != (instruction & 0x0ff)) {
-      pc_ += 1;
+      pc_ += 2;
     }
     return true;
   }
   // 5xy0 - SE Vx, Vy.
   if (instruction >> 12 == 0x5 && (instruction & 0xf) == 0) {
     if (v_[(instruction & 0xf00) >> 8] == v_[(instruction & 0x0f0) >> 4]) {
-      pc_ += 1;
+      pc_ += 2;
     }
     return true;
   }
@@ -160,7 +160,7 @@ bool Cpu::execute(uint16_t instruction) {
   // 9xy0 - SNE Vx, Vy.
   if (instruction >> 12 == 0x9 && (instruction & 0xf) == 0) {
     if (v_[(instruction & 0xf00) >> 8] != v_[(instruction & 0x0f0) >> 4]) {
-      pc_ += 1;
+      pc_ += 2;
     }
     return true;
   }
@@ -171,7 +171,7 @@ bool Cpu::execute(uint16_t instruction) {
   }
   // bnnn - JP V0, addr.
   if (instruction >> 12 == 0xb) {
-    pc_ = (instruction & 0xfff) + v_[0] - 1;
+    pc_ = (instruction & 0xfff) + v_[0] - 2;
     return true;
   }
   // Cxkk - RND Vx, byte.
@@ -195,14 +195,14 @@ bool Cpu::execute(uint16_t instruction) {
   // Ex9E - SKP Vx.
   if (instruction >> 12 == 0xe && (instruction & 0xff) == 0x9e) {
     if (keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
-      ++pc_;
+      pc_ += 2;
     }
     return true;
   }
   // ExA1 - SKNP Vx.
   if (instruction >> 12 == 0xe && (instruction & 0xff) == 0xa1) {
     if (!keyboard_->is_key_pressed(v_[(instruction & 0xf00) >> 8])) {
-      ++pc_;
+      pc_ += 2;
     }
     return true;
   }
@@ -268,7 +268,11 @@ bool Cpu::execute(uint16_t instruction) {
 }
 
 bool Cpu::step() {
-  return execute(memory_[pc_++]);
+  bool result = execute((static_cast<uint16_t>(memory_[pc_] << 8) | memory_[pc_ + 1]));
+  if (result) {
+    pc_ += 2;
+  }
+  return result;
 }
 
 bool Cpu::load(const std::string& path) {
