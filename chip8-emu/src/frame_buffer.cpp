@@ -12,7 +12,7 @@ bool FrameBuffer::paint(uint8_t x, uint8_t y, uint8_t line) {
   for (size_t i = 0; i < bits.size(); ++i) {
     bool existing = get_pixel(x + i, y);
     bool bit = bits[bits.size() - 1 - i];
-    if (existing & bit) {
+    if (existing && bit) {
       erased = true;
     }
     set_pixel(x + i, y, existing ^ bit);

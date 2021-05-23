@@ -56,6 +56,9 @@ TEST_F(CpuTest, Initialization) {
   for (uint16_t i = Cpu::kMinAddressableMemory; i <= Cpu::kMaxMemory; ++i) {
     EXPECT_EQ(0, cpu_->peek(i));
   }
+  for (uint16_t i = 0; i <= 0xf;  ++i) {
+    EXPECT_EQ(0, cpu_->v(i));
+  }
 }
 
 TEST_F(CpuTest, BadInstruction) {
@@ -80,16 +83,16 @@ TEST_F(CpuTest, JmpInstruction) {
 
 TEST_F(CpuTest, CallAndRetInstructions) {
   ASSERT_TRUE(cpu_->execute(0x2300));
-  EXPECT_EQ(0x300, cpu_->pc());
+  EXPECT_EQ(0x2fe, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x2400));
-  EXPECT_EQ(0x400, cpu_->pc());
+  EXPECT_EQ(0x3fe, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x2500));
-  EXPECT_EQ(0x500, cpu_->pc());
+  EXPECT_EQ(0x4fe, cpu_->pc());
 
   ASSERT_TRUE(cpu_->execute(0x00ee));
-  EXPECT_EQ(0x400, cpu_->pc());
+  EXPECT_EQ(0x3fe, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x00ee));
-  EXPECT_EQ(0x300, cpu_->pc());
+  EXPECT_EQ(0x2fe, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x00ee));
   EXPECT_EQ(Cpu::kMinAddressableMemory, cpu_->pc());
 }
@@ -194,6 +197,11 @@ TEST_F(CpuTest, Add) {
   // Add 0x03 to the register 0.
   ASSERT_TRUE(cpu_->execute(0x7003));
   EXPECT_EQ(0x33, cpu_->v(0));
+  EXPECT_EQ(0, cpu_->v(0xf));
+
+  // Add 0xff to the register 0. This should be equivalent to subtracting 1.
+  ASSERT_TRUE(cpu_->execute(0x70ff));
+  EXPECT_EQ(0x32, cpu_->v(0));
   EXPECT_EQ(0, cpu_->v(0xf));
 
   // Add 0xff to the register e.
@@ -386,7 +394,7 @@ TEST_F(CpuTest, ShiftLeft) {
   // Add 0x7f to the register 0.
   ASSERT_TRUE(cpu_->execute(0x707f));
   EXPECT_EQ(0x7f, cpu_->v(0));
-  EXPECT_EQ(0x00, cpu_->v(0x7f));
+  EXPECT_EQ(0x00, cpu_->v(0xf));
 
   // Shift left.
   ASSERT_TRUE(cpu_->execute(0x800e));
@@ -519,6 +527,15 @@ TEST_F(CpuTest, Paint) {
   EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x15, 0x20));
   EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x16, 0x20));
   EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x17, 0x20));
+
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x10, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x11, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x12, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x13, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x14, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x15, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x16, 0x21));
+  EXPECT_EQ(false, cpu_->frame_buffer()->get_pixel(0x17, 0x21));
 
   EXPECT_EQ(0, cpu_->v(0xf));
 
@@ -724,4 +741,29 @@ TEST_F(CpuTest, StepTest) {
   ASSERT_TRUE(cpu_->step());
   EXPECT_EQ(0x200, cpu_->pc());
   EXPECT_EQ(1, cpu_->v(0));
+}
+
+TEST_F(CpuTest, StepCallTest) {
+  // Call a function in position 0x300.
+  cpu_->set_memory(0x200, 0x23);
+  cpu_->set_memory(0x201, 0x00);
+
+  // Jump to the start.
+  cpu_->set_memory(0x202, 0x12);
+  cpu_->set_memory(0x203, 0x00);
+
+  // Return.
+  cpu_->set_memory(0x300, 0x00);
+  cpu_->set_memory(0x301, 0xee);
+
+  EXPECT_EQ(0x200, cpu_->pc());
+
+  ASSERT_TRUE(cpu_->step());
+  EXPECT_EQ(0x300, cpu_->pc());
+
+  ASSERT_TRUE(cpu_->step());
+  EXPECT_EQ(0x202, cpu_->pc());
+
+  ASSERT_TRUE(cpu_->step());
+  EXPECT_EQ(0x200, cpu_->pc());
 }

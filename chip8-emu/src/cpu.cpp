@@ -74,7 +74,7 @@ bool Cpu::execute(uint16_t instruction) {
     }
     stack_[sp_] = pc_;
     ++sp_;
-    pc_ = instruction & 0xfff - 2;
+    pc_ = (instruction & 0xfff) - 2;
     return true;
   }
   // 3xkk - SE Vx, byte.
