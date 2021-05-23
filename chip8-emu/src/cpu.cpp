@@ -131,34 +131,39 @@ bool Cpu::execute(uint16_t instruction) {
   // 8xy4 - ADD Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x4) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
-    v_[0xf] = v_[(instruction & 0xf00) >> 8] + right > 0x00ff;
+    uint16_t left = v_[(instruction & 0xf00) >> 8];
     v_[(instruction & 0xf00) >> 8] += right;
+    v_[0xf] = left + right > 0x00ff;
     return true;
   }
   // 8xy5 - SUB Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x5) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
-    v_[0xf] = v_[(instruction & 0xf00) >> 8] > right;
+    bool no_borrow = v_[(instruction & 0xf00) >> 8] > right;
     v_[(instruction & 0xf00) >> 8] -= right;
+    v_[0xf] = no_borrow;
     return true;
   }
   // 8xy6 - SHR Vx {, Vy}.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x6) {
-    v_[0xf] = v_[(instruction & 0xf00) >> 8] & 1;
+    bool last_bit = v_[(instruction & 0xf00) >> 8] & 1;
     v_[(instruction & 0xf00) >> 8] >>= 1;
+    v_[0xf] = last_bit;
     return true;
   }
   // 8xy7 - SUBN Vx, Vy.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0x7) {
     uint16_t right = v_[(instruction & 0x0f0) >> 4];
-    v_[0xf] = right > v_[(instruction & 0xf00) >> 8];
+    bool no_borrow = right > v_[(instruction & 0xf00) >> 8];
     v_[(instruction & 0xf00) >> 8] = right - v_[(instruction & 0xf00) >> 8];
+    v_[0xf] = no_borrow;
     return true;
   }
   // 8xyE - SHL Vx {, Vy}.
   if (instruction >> 12 == 0x8 && (instruction & 0xf) == 0xe) {
-    v_[0xf] = (v_[(instruction & 0xf00) >> 8] >> 7) & 1;
+    bool first_bit = (v_[(instruction & 0xf00) >> 8] >> 7) & 1;
     v_[(instruction & 0xf00) >> 8] <<= 1;
+    v_[0xf] = first_bit;
     return true;
   }
   // 9xy0 - SNE Vx, Vy.

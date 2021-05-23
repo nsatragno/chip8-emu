@@ -301,6 +301,12 @@ TEST_F(CpuTest, MathAdd) {
   EXPECT_EQ(0x02, cpu_->v(0));
   EXPECT_EQ(0x03, cpu_->v(0x1));
   EXPECT_EQ(0x00, cpu_->v(0xf));
+
+  // Set register f to register f plus register 1. This should set f to zero
+  // since there is no overflow.
+  ASSERT_TRUE(cpu_->execute(0x8f14));
+  EXPECT_EQ(0x03, cpu_->v(0x1));
+  EXPECT_EQ(0x00, cpu_->v(0xf));
 }
 
 TEST_F(CpuTest, MathSub) {
@@ -388,6 +394,17 @@ TEST_F(CpuTest, MathSubn) {
   EXPECT_EQ(0x00, cpu_->v(0));
   EXPECT_EQ(0xff, cpu_->v(0x1));
   EXPECT_EQ(0x00, cpu_->v(0xf));
+
+  // Set register f to 0.
+  ASSERT_TRUE(cpu_->execute(0x6f00));
+
+  // Set register 1 to 5.
+  ASSERT_TRUE(cpu_->execute(0x6105));
+
+  // Set register f to register 1 minus register f. This should set the no
+  // borrow flag.
+  ASSERT_TRUE(cpu_->execute(0x8f17));
+  EXPECT_EQ(0x01, cpu_->v(0xf));
 }
 
 TEST_F(CpuTest, ShiftLeft) {
