@@ -32,8 +32,12 @@ class Cpu : Keyboard::KeyboardObserver {
 
   // Executes |instruction| without incrementing the program counter. Returns
   // true if the machine was able to execute the instruction successfully, false
-  // otherwise.
+  // otherwise. Jump instructions set the PC to their target - 1 to allow
+  // unconditionally incrementing the PC when stepping.
   bool execute(uint16_t instruction);
+
+  // Executes the next instruction and updates the program counter.
+  bool step();
 
   // Attempts to load the chip 8 file |path|. Returns true if successful, false
   // otherwise.
@@ -61,7 +65,7 @@ class Cpu : Keyboard::KeyboardObserver {
   uint8_t sp_ = 0;
   uint8_t delay_ = 0;
   uint8_t sound_ = 0;
-  uint16_t pc_ = 0;
+  uint16_t pc_ = kMinAddressableMemory;
   uint8_t memory_[kMaxMemory + 1] = {{0}};
 
   bool waiting_for_key_press_ = false;

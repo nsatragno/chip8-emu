@@ -5,18 +5,15 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <SFML/Window/Keyboard.hpp>
 #include <filesystem>
 #include <iostream>
 
+#include "src/constants.h"
 #include "src/cpu.h"
 #include "src/frame_buffer.h"
 #include "src/logging.h"
 #include "src/sf_keyboard_adapter.h"
-
-constexpr static int kRenderMultiplier = 16;
-const static sf::Color kForegroundColor = sf::Color::Green;
-const static sf::Color kBackgroundColor = sf::Color::Black;
-const static std::string kRomLocation = "roms/";
 
 namespace fs = std::filesystem;
 
@@ -37,6 +34,7 @@ int main() {
       sf::VideoMode(FrameBuffer::kScreenWidth * kRenderMultiplier,
                     FrameBuffer::kScreenHeight * kRenderMultiplier),
       "chip8 emu", sf::Style::Close);
+  window.setFramerateLimit(60);
 
   sf::Font font;
   if (!font.loadFromFile("resources/PressStart2P.ttf")) {
@@ -59,9 +57,9 @@ int main() {
   title.setFillColor(kForegroundColor);
 
   std::unique_ptr<Random> random = std::make_unique<Random>();
-  std::unique_ptr<Keyboard> keyboard = std::make_unique<SfKeyboardAdapter>();
-  std::unique_ptr<Cpu> cpu =
-      std::make_unique<Cpu>(random.get(), keyboard.get());
+  std::unique_ptr<SfKeyboardAdapter> keyboard =
+      std::make_unique<SfKeyboardAdapter>();
+  std::unique_ptr<Cpu> cpu;
 
   bool in_menu = true;
   while (window.isOpen()) {
@@ -77,10 +75,12 @@ int main() {
 
         if (event.type == sf::Event::KeyPressed) {
           if (event.key.code == sf::Keyboard::Enter) {
+            in_menu = false;
+            cpu = std::make_unique<Cpu>(random.get(), keyboard.get());
             if (!cpu->load(roms[selected_index].u8string())) {
               return -1;
             }
-            continue;
+            goto loop;
           }
           if (event.key.code == sf::Keyboard::Down) {
             ++selected_index;
@@ -117,9 +117,30 @@ int main() {
       }
       window.draw(chevron);
 
+    } else {
+      sf::Event event;
+      while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+          window.close();
+          return 0;
+        }
+        if (event.type == sf::Event::KeyPressed) {
+          if (event.key.code == sf::Keyboard::Escape) {
+            cpu.reset();
+            in_menu = true;
+            goto loop;
+          }
+          keyboard->on_key_pressed(event.key.code);
+        }
+      }
+      if (!cpu->step()) {
+        return -1;
+      }
+      cpu->frame_buffer()->draw(&window);
     }
 
     window.display();
+  loop:;
   }
 
   return 0;

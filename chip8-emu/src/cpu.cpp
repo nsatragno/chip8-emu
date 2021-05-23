@@ -59,7 +59,7 @@ bool Cpu::execute(uint16_t instruction) {
   }
   // 1nnn - JP addr.
   if (instruction >> 12 == 0x1) {
-    pc_ = instruction & 0xfff;
+    pc_ = (instruction & 0xfff) - 1;
     return true;
   }
   // 2nnn - CALL addr.
@@ -70,7 +70,7 @@ bool Cpu::execute(uint16_t instruction) {
     }
     stack_[sp_] = pc_;
     ++sp_;
-    pc_ = instruction & 0xfff;
+    pc_ = instruction & 0xfff - 1;
     return true;
   }
   // 3xkk - SE Vx, byte.
@@ -171,7 +171,7 @@ bool Cpu::execute(uint16_t instruction) {
   }
   // bnnn - JP V0, addr.
   if (instruction >> 12 == 0xb) {
-    pc_ = (instruction & 0xfff) + v_[0];
+    pc_ = (instruction & 0xfff) + v_[0] - 1;
     return true;
   }
   // Cxkk - RND Vx, byte.
@@ -265,6 +265,10 @@ bool Cpu::execute(uint16_t instruction) {
   logging::log(logging::Level::ERROR,
                "Unknown instruction: " + tohex(instruction));
   return false;
+}
+
+bool Cpu::step() {
+  return execute(memory_[pc_++]);
 }
 
 bool Cpu::load(const std::string& path) {

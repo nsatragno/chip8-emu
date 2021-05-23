@@ -74,24 +74,24 @@ TEST_F(CpuTest, SysInstruction) {
 TEST_F(CpuTest, JmpInstruction) {
   for (uint16_t i = 0x1000, pc = 0; i <= 0x1fff; ++i, ++pc) {
     ASSERT_TRUE(cpu_->execute(i));
-    EXPECT_EQ(pc, cpu_->pc());
+    EXPECT_EQ(pc, (uint16_t)(cpu_->pc() + 1));
   }
 }
 
 TEST_F(CpuTest, CallAndRetInstructions) {
-  ASSERT_TRUE(cpu_->execute(0x2100));
-  EXPECT_EQ(0x100, cpu_->pc());
-  ASSERT_TRUE(cpu_->execute(0x2200));
-  EXPECT_EQ(0x200, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x2300));
   EXPECT_EQ(0x300, cpu_->pc());
+  ASSERT_TRUE(cpu_->execute(0x2400));
+  EXPECT_EQ(0x400, cpu_->pc());
+  ASSERT_TRUE(cpu_->execute(0x2500));
+  EXPECT_EQ(0x500, cpu_->pc());
 
   ASSERT_TRUE(cpu_->execute(0x00ee));
-  EXPECT_EQ(0x200, cpu_->pc());
+  EXPECT_EQ(0x400, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x00ee));
-  EXPECT_EQ(0x100, cpu_->pc());
+  EXPECT_EQ(0x300, cpu_->pc());
   ASSERT_TRUE(cpu_->execute(0x00ee));
-  EXPECT_EQ(0x000, cpu_->pc());
+  EXPECT_EQ(Cpu::kMinAddressableMemory, cpu_->pc());
 }
 
 TEST_F(CpuTest, CallOverflow) {
@@ -108,67 +108,67 @@ TEST_F(CpuTest, RetUnderflow) {
 }
 
 TEST_F(CpuTest, SkipInstructionIfEqual) {
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Load into register 0 the value 90.
   ASSERT_TRUE(cpu_->execute(0x6090));
 
   // Skip if register 0 contains the value 90.
   ASSERT_TRUE(cpu_->execute(0x3090));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if register 0 contains the value ff.
   ASSERT_TRUE(cpu_->execute(0x30ff));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Load into register f the value ff.
   ASSERT_TRUE(cpu_->execute(0x6fff));
 
   // Skip if register f contains the value ff.
   ASSERT_TRUE(cpu_->execute(0x3fff));
-  EXPECT_EQ(2, cpu_->pc());
+  EXPECT_EQ(0x202, cpu_->pc());
 
   // Skip if register f contains the value 0.
   ASSERT_TRUE(cpu_->execute(0x3f00));
-  EXPECT_EQ(2, cpu_->pc());
+  EXPECT_EQ(0x202, cpu_->pc());
 
   // Skip if register a contains the value ff.
   ASSERT_TRUE(cpu_->execute(0x3aff));
-  EXPECT_EQ(2, cpu_->pc());
+  EXPECT_EQ(0x202, cpu_->pc());
 }
 
 TEST_F(CpuTest, SkipInstructionIfNotEqual) {
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Load into register 0 the value 90.
   ASSERT_TRUE(cpu_->execute(0x6090));
 
   // Skip if register 0 does not contain the value 90.
   ASSERT_TRUE(cpu_->execute(0x4090));
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Skip if register 0 does not contain the value ff.
   ASSERT_TRUE(cpu_->execute(0x40ff));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Load into register f the value ff.
   ASSERT_TRUE(cpu_->execute(0x6fff));
 
   // Skip if register f does not contain the value ff.
   ASSERT_TRUE(cpu_->execute(0x4fff));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if register f does not contain the value 0.
   ASSERT_TRUE(cpu_->execute(0x4f00));
-  EXPECT_EQ(2, cpu_->pc());
+  EXPECT_EQ(0x202, cpu_->pc());
 
   // Skip if register a does not contain the value ff.
   ASSERT_TRUE(cpu_->execute(0x4aff));
-  EXPECT_EQ(3, cpu_->pc());
+  EXPECT_EQ(0x203, cpu_->pc());
 }
 
 TEST_F(CpuTest, SkipInstructionIfEqualsRegister) {
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Load into register 0 the value 90.
   ASSERT_TRUE(cpu_->execute(0x6090));
@@ -178,11 +178,11 @@ TEST_F(CpuTest, SkipInstructionIfEqualsRegister) {
 
   // Skip if registers 0 and f are equal.
   ASSERT_TRUE(cpu_->execute(0x50f0));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if registers 0 and e are equal.
   ASSERT_TRUE(cpu_->execute(0x50e0));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 }
 
 TEST_F(CpuTest, Add) {
@@ -400,7 +400,7 @@ TEST_F(CpuTest, ShiftLeft) {
 }
 
 TEST_F(CpuTest, SkipInstructionIfNotEqualsRegister) {
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Load into register 0 the value 90.
   ASSERT_TRUE(cpu_->execute(0x6090));
@@ -410,11 +410,11 @@ TEST_F(CpuTest, SkipInstructionIfNotEqualsRegister) {
 
   // Skip if registers 0 and f are not equal.
   ASSERT_TRUE(cpu_->execute(0x90f0));
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Skip if registers 0 and e are not equal.
   ASSERT_TRUE(cpu_->execute(0x90e0));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 }
 
 TEST_F(CpuTest, LoadIndex) {
@@ -424,14 +424,14 @@ TEST_F(CpuTest, LoadIndex) {
 }
 
 TEST_F(CpuTest, JmpV0) {
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Load into register 0 the value 90.
   ASSERT_TRUE(cpu_->execute(0x6090));
 
   // Jump V0 + 105.
   ASSERT_TRUE(cpu_->execute(0xb105));
-  EXPECT_EQ(0x195, cpu_->pc());
+  EXPECT_EQ(0x194, cpu_->pc());
 }
 
 TEST_F(CpuTest, Rnd) {
@@ -545,15 +545,15 @@ TEST_F(CpuTest, SkipIfKey) {
 
   // Skip if key 0 is pressed.
   ASSERT_TRUE(cpu_->execute(0xe09e));
-  EXPECT_EQ(0, cpu_->pc());
+  EXPECT_EQ(0x200, cpu_->pc());
 
   // Skip if key a is pressed.
   ASSERT_TRUE(cpu_->execute(0xe19e));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if an invalid key is pressed.
   ASSERT_TRUE(cpu_->execute(0xe29e));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 }
 
 TEST_F(CpuTest, SkipIfNotKey) {
@@ -570,15 +570,15 @@ TEST_F(CpuTest, SkipIfNotKey) {
 
   // Skip if key 0 is pressed.
   ASSERT_TRUE(cpu_->execute(0xe0a1));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if key a is pressed.
   ASSERT_TRUE(cpu_->execute(0xe1a1));
-  EXPECT_EQ(1, cpu_->pc());
+  EXPECT_EQ(0x201, cpu_->pc());
 
   // Skip if an invalid key is pressed.
   ASSERT_TRUE(cpu_->execute(0xe2a1));
-  EXPECT_EQ(2, cpu_->pc());
+  EXPECT_EQ(0x202, cpu_->pc());
 }
 
 TEST_F(CpuTest, LoadDelayTimer) {

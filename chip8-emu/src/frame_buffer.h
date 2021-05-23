@@ -3,6 +3,8 @@
 #include <vector>
 #include <bitset>
 
+#include <SFML/Graphics.hpp>
+
 // A 64 x 32 pixel display framebuffer.
 class FrameBuffer {
  public:
@@ -25,6 +27,9 @@ class FrameBuffer {
 
   // Clears the framebuffer.
   void clear_screen();
+
+  // Draws the framebuffer onto the |window|.
+  void draw(sf::RenderWindow* window) const;
 
   void print();
 

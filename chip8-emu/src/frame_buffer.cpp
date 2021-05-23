@@ -1,5 +1,6 @@
 #include "src/frame_buffer.h"
 
+#include "src/constants.h"
 #include "src/logging.h"
 
 #include <bitset>
@@ -30,6 +31,21 @@ void FrameBuffer::set_pixel(uint8_t x, uint8_t y, bool on) {
 void FrameBuffer::clear_screen() {
   for (size_t i = 0; i < kScreenWidth; ++i) {
     buffer_[i].reset();
+  }
+}
+
+void FrameBuffer::draw(sf::RenderWindow* window) const {
+  sf::RectangleShape pixel;
+  pixel.setFillColor(kForegroundColor);
+  pixel.setSize(sf::Vector2f(kRenderMultiplier, kRenderMultiplier));
+
+  for (int x = 0; x < kScreenWidth; ++x) {
+    for (int y = 0; y < kScreenHeight; ++y) {
+      if (get_pixel(x, y)) {
+        pixel.setPosition(x * kRenderMultiplier, y * kRenderMultiplier);
+        window->draw(pixel);
+      }
+    }
   }
 }
 
